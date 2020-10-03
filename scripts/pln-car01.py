@@ -13,6 +13,10 @@ import csv # rbx
 import math #rbx
 
 from plnLaserScan import LidarScan
+import tf
+
+RADDEG = 180. / math.pi 
+DEGRAD = math.pi / 180.
 
 
 class Agent(object):
@@ -79,8 +83,19 @@ class Agent(object):
         center_x = (left_x + right_x) / 2.
         center_y = (left_y + right_y) / 2.
 
+        # https://answers.ros.org/question/69754/quaternion-transformations-in-python/
+        quaternion = (
+          odom_msg.pose.pose.orientation.x,
+          odom_msg.pose.pose.orientation.y,
+          odom_msg.pose.pose.orientation.z,
+          odom_msg.pose.pose.orientation.w)
+        euler = tf.transformations.euler_from_quaternion(quaternion)
+        roll = euler[0]
+        pitch = euler[1]
+        yaw = euler[2]
+        print(roll*RADDEG, pitch*RADDEG, yaw*RADDEG)
 
-        print(car_x, car_y)
+        #print(car_x, car_y)
         self.log_writer.writerow({
             'x':  odom_msg.pose.pose.position.x,
             'y':  odom_msg.pose.pose.position.y,
