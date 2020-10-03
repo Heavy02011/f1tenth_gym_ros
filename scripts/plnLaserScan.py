@@ -100,9 +100,10 @@ class LidarScan(object):
         # angle segment relevant to detect minimum distance to the front of vehicle
         del_front = 30.0 * DEGRAD
 
-
+        lidar_angles = []
         for range in self.ranges:
             angle += self.angle_increment
+            lidar_angles.append(angle)
             #print(idx, angle * RADDEG, range)
             
             # cut ranges lower min or greater than max
@@ -129,7 +130,7 @@ class LidarScan(object):
             # count lidar scan points
             idx += 1
 
-        return dist_left, dist_front, dist_right
+        return dist_left, dist_front, dist_right, idx_left, idx_front, idx_right, self.ranges, lidar_angles
 
         # cover left & right lane
         # cover front
