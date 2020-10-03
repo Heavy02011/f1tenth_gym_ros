@@ -2,6 +2,8 @@
 
 # start: roslaunch f1tenth_gym_ros pln-car01.launch
 
+# fixing tf import: https://answers.ros.org/question/326226/importerror-dynamic-module-does-not-define-module-export-function-pyinit__tf2/
+
 import rospy
 from ackermann_msgs.msg import AckermannDriveStamped
 from sensor_msgs.msg import LaserScan
@@ -67,21 +69,6 @@ class Agent(object):
         self.drive_pub.publish(drive)
 
     def odom_callback(self, odom_msg):
-        #print(odom_msg)
-        car_x = odom_msg.pose.pose.position.x
-        car_y = odom_msg.pose.pose.position.y
-
-        # left lane
-        left_x = car_x + math.cos(self.lidar_angles[self.idx_left]) * self.dist_left
-        left_y = car_y + math.sin(self.lidar_angles[self.idx_left]) * self.dist_left
-
-        # right lane
-        right_x = car_x + math.cos(self.lidar_angles[self.idx_right]) * self.dist_right
-        right_y = car_y + math.sin(self.lidar_angles[self.idx_right]) * self.dist_right
-
-        # center lane
-        center_x = (left_x + right_x) / 2.
-        center_y = (left_y + right_y) / 2.
 
         # https://answers.ros.org/question/69754/quaternion-transformations-in-python/
         quaternion = (
@@ -94,6 +81,24 @@ class Agent(object):
         pitch = euler[1]
         yaw = euler[2]
         print(roll*RADDEG, pitch*RADDEG, yaw*RADDEG)
+
+        #print(odom_msg)
+        car_x = odom_msg.pose.pose.position.x
+        car_y = odom_msg.pose.pose.position.y
+
+        # left lane
+        left_x = car_x + math.cos(self.lidar_angles[self.idx_left]+yaw) * self.dist_left
+        left_y = car_y + math.sin(self.lidar_angles[self.idx_left]+yaw) * self.dist_left
+
+        # right lane
+        right_x = car_x + math.cos(self.lidar_angles[self.idx_right]+yaw) * self.dist_right
+        right_y = car_y + math.sin(self.lidar_angles[self.idx_right]+yaw) * self.dist_right
+
+        # center lane
+        center_x = (left_x + right_x) / 2.
+        center_y = (left_y + right_y) / 2.
+
+
 
         #print(car_x, car_y)
         self.log_writer.writerow({
