@@ -33,7 +33,7 @@ class Agent(object):
 
         self.outfile = "/home/rainer/catkin_ws/data/track.csv"
         print("writing xy to file = ",self.outfile)
-        self.fieldname = ['x', 'y', 'z', 'left_x', 'left_y', 'center_x', 'center_y','right_x', 'right_y','ax', 'ay', 'az', 'aw']
+        self.fieldname = ['x', 'y', 'z', 'left_x', 'left_y', 'center_x', 'center_y','right_x', 'right_y','track_width', 'ax', 'ay', 'az', 'aw']
         self.log_file = open(self.outfile, 'w')
         self.log_writer = csv.DictWriter(self.log_file, fieldnames=self.fieldname)
         self.log_writer.writeheader()
@@ -50,9 +50,9 @@ class Agent(object):
         lidarScan = LidarScan(scan_msg)
         self.dist_left, self.dist_front, self.dist_right, self.idx_left, self.idx_front, self.idx_right, self.ranges, self.lidar_angles = lidarScan.get_ranges()
         #print(dist_left, dist_front, dist_right)
-        track_width = self.dist_left + self.dist_right
+        self.track_width = self.dist_left + self.dist_right
         #print(track_width)
-        steering = -(track_width / 2. - self.dist_left) / 2.
+        steering = -(self.track_width / 2. - self.dist_left) / 2.
 
         # print('got scan, now plan')
         drive = AckermannDriveStamped()
@@ -64,6 +64,8 @@ class Agent(object):
         
         drive.drive.speed = th #0.1
         drive.drive.steering_angle = st #-0.01
+        
+        drive.drive.steering_angle_velocity = steering / 10 # smooth version ?
         #print(st, th)
 
         self.drive_pub.publish(drive)
@@ -101,22 +103,24 @@ class Agent(object):
 
 
         #print(car_x, car_y)
-        self.log_writer.writerow({
-            'x':  odom_msg.pose.pose.position.x,
-            'y':  odom_msg.pose.pose.position.y,
-            'z':  odom_msg.pose.pose.position.z,
-            'left_x' : left_x,
-            'left_y' : left_y,
-            'center_x' : center_x,
-            'center_y' : center_y,
-            'right_x' : right_x,
-            'right_y' : right_y,
-            'ax': odom_msg.pose.pose.orientation.x,
-            'ay': odom_msg.pose.pose.orientation.y,
-            'az': odom_msg.pose.pose.orientation.z,
-            'aw': odom_msg.pose.pose.orientation.w
-            })
-        self.log_file.flush()
+        if self.track_width < 6:
+          self.log_writer.writerow({
+              'x':  odom_msg.pose.pose.position.x,
+              'y':  odom_msg.pose.pose.position.y,
+              'z':  odom_msg.pose.pose.position.z,
+              'left_x' : left_x,
+              'left_y' : left_y,
+              'center_x' : center_x,
+              'center_y' : center_y,
+              'right_x' : right_x,
+              'right_y' : right_y,
+              'track_width': self.track_width,
+              'ax': odom_msg.pose.pose.orientation.x,
+              'ay': odom_msg.pose.pose.orientation.y,
+              'az': odom_msg.pose.pose.orientation.z,
+              'aw': odom_msg.pose.pose.orientation.w
+              })
+          self.log_file.flush()
 
 if __name__ == '__main__':
     rospy.init_node('pln_racer')
