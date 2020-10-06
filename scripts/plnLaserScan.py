@@ -76,7 +76,9 @@ class LidarScan(object):
         idx = 0
         # angle segment relevant to detect minimum distance to left & right side of vehicle
         #del_side = 5.0 * DEGRAD
-        del_side = 1.0 * DEGRAD
+        #del_side = 1.0 * DEGRAD
+        del_side = 30.0 * DEGRAD
+
 
         # angle segment relevant to detect minimum distance to the front of vehicle
         del_front = 30.0 * DEGRAD

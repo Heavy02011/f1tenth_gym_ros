@@ -21,6 +21,7 @@ RADDEG = 180. / math.pi
 DEGRAD = math.pi / 180.
 
 
+
 class Agent(object):
     def __init__(self):
         self.drive_pub = rospy.Publisher('/drive', AckermannDriveStamped, queue_size=1)
@@ -45,6 +46,9 @@ class Agent(object):
         self.idx_front  = 0
         self.idx_right  = 0
 
+        self.skipframes = 0 #20
+        self.iframe = 0
+
     def scan_callback(self, scan_msg):
         # analize scan
         lidarScan = LidarScan(scan_msg)
@@ -52,7 +56,7 @@ class Agent(object):
         #print(dist_left, dist_front, dist_right)
         self.track_width = self.dist_left + self.dist_right
         #print(track_width)
-        steering = -(self.track_width / 2. - self.dist_left) / 2.
+        steering = -(self.track_width / 2. - self.dist_left) / 1.5 #2.
 
         # print('got scan, now plan')
         drive = AckermannDriveStamped()
@@ -65,7 +69,7 @@ class Agent(object):
         drive.drive.speed = th #0.1
         drive.drive.steering_angle = st #-0.01
         
-        drive.drive.steering_angle_velocity = steering / 10 # smooth version ?
+        drive.drive.steering_angle_velocity = steering / 5# 10 # smooth version ?
         #print(st, th)
 
         self.drive_pub.publish(drive)
@@ -103,24 +107,28 @@ class Agent(object):
 
 
         #print(car_x, car_y)
-        if self.track_width < 6:
-          self.log_writer.writerow({
-              'x':  odom_msg.pose.pose.position.x,
-              'y':  odom_msg.pose.pose.position.y,
-              'z':  odom_msg.pose.pose.position.z,
-              'left_x' : left_x,
-              'left_y' : left_y,
-              'center_x' : center_x,
-              'center_y' : center_y,
-              'right_x' : right_x,
-              'right_y' : right_y,
-              'track_width': self.track_width,
-              'ax': odom_msg.pose.pose.orientation.x,
-              'ay': odom_msg.pose.pose.orientation.y,
-              'az': odom_msg.pose.pose.orientation.z,
-              'aw': odom_msg.pose.pose.orientation.w
-              })
-          self.log_file.flush()
+        if (self.track_width < 6) and (self.track_width > 2):
+          if (self.iframe < self.skipframes):
+            self.iframe += 1
+          else:
+            self.log_writer.writerow({
+                'x':  odom_msg.pose.pose.position.x,
+                'y':  odom_msg.pose.pose.position.y,
+                'z':  odom_msg.pose.pose.position.z,
+                'left_x' : left_x,
+                'left_y' : left_y,
+                'center_x' : center_x,
+                'center_y' : center_y,
+                'right_x' : right_x,
+                'right_y' : right_y,
+                'track_width': self.track_width,
+                'ax': odom_msg.pose.pose.orientation.x,
+                'ay': odom_msg.pose.pose.orientation.y,
+                'az': odom_msg.pose.pose.orientation.z,
+                'aw': odom_msg.pose.pose.orientation.w
+                })
+            self.log_file.flush()
+            self.iframe = 0
 
 if __name__ == '__main__':
     rospy.init_node('pln_racer')
