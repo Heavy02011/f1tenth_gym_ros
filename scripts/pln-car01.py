@@ -32,7 +32,7 @@ class Agent(object):
 
         #self.scan_sub = rospy.Subscriber('/initialpose', LaserScan, self.initialpose_callback, queue_size=1)
 
-        self.outfile = "/home/rainer/catkin_ws/data/track.csv"
+        self.outfile = "/home/rainer/catkin_ws/data/track_skip30.csv"
         print("writing xy to file = ",self.outfile)
         self.fieldname = ['x', 'y', 'z', 'left_x', 'left_y', 'center_x', 'center_y','right_x', 'right_y','track_width', 'ax', 'ay', 'az', 'aw']
         self.log_file = open(self.outfile, 'w')
@@ -46,7 +46,7 @@ class Agent(object):
         self.idx_front  = 0
         self.idx_right  = 0
 
-        self.skipframes = 0 #20
+        self.skipframes = 30 #10 #20
         self.iframe = 0
 
     def scan_callback(self, scan_msg):
