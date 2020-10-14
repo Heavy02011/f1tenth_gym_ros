@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# start: roslaunch f1tenth_gym_ros pln-car01.launch
+# start: roslaunch f1tenth_gym_ros pln-car01_racer.launch
 
 # fixing tf import: https://answers.ros.org/question/326226/importerror-dynamic-module-does-not-define-module-export-function-pyinit__tf2/
 
@@ -14,7 +14,7 @@ import random # rbx
 import csv # rbx
 import math #rbx
 
-from plnLaserScan import LidarScan
+from plnLaserScan_racer import LidarScan
 import tf
 
 RADDEG = 180. / math.pi 
@@ -63,14 +63,16 @@ class Agent(object):
 
         # RBX
         st = steering # random.random() * 2.0 - 1.0
-        th = 1.0 #0.3
+        th = 10.0 #1.0 #0.3
         # RBX
         
         drive.drive.speed = th #0.1
         drive.drive.steering_angle = st #-0.01
         
         drive.drive.steering_angle_velocity = steering / 5# 10 # smooth version ?
-        #print(st, th)
+        #print(st, th, drive)
+        #print(self.drive_pub)
+        #print(scan_msg)
 
         self.drive_pub.publish(drive)
 
@@ -132,6 +134,7 @@ class Agent(object):
 
 if __name__ == '__main__':
     rospy.init_node('pln_racer')
+    #rospy.init_node('f1tenth_gym_ros')
     dummy_agent = Agent()
     rospy.spin()
 

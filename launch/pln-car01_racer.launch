@@ -3,7 +3,7 @@
   
 <include file="$(find f1tenth_gym_ros)/launch/gym_bridge_host.launch"/>
 
-<node pkg="f1tenth_gym_ros" type="pln-car01.py" name="pln_scan_track" output="screen"/>
+<node pkg="f1tenth_gym_ros" type="pln-car01_racer.py" name="pln_racer" output="screen"/>
 
 
   </launch>
